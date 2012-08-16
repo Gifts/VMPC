@@ -35,6 +35,34 @@ class TestStream(unittest.TestCase):
             '81ca499a'.decode('hex')
         )
 
+    def test_stream2(self):
+        key = '9661410AB797D8A9EB767C21172DF6C7'.decode('hex')
+        IV = '4B5C2F003E67F39557A8D26F3DA2B155'.decode('hex')
+        self.vmpc_object.KSA(key, IV, 2)
+
+        result = array.array('B')
+        stream = self.vmpc_object._cipher_stream()
+        for i in xrange(102400):
+            result.append(stream.next())
+        result_string = result.tostring()
+
+        self.assertEqual(
+            result_string[0:4],
+            'b6ebaefe'.decode('hex')
+        )
+        self.assertEqual(
+            result_string[252:256],
+            '48172473'.decode('hex')
+        )
+        self.assertEqual(
+            result_string[1020:1024],
+            '1daec35a'.decode('hex')
+        )
+        self.assertEqual(
+            result_string[102396:102400],
+            '1da7e1dc'.decode('hex')
+        )
+
     def test_crypt1(self):
         key = '9661410AB797D8A9EB767C21172DF6C7'.decode('hex')
         IV = '4B5C2F003E67F39557A8D26F3DA2B155'.decode('hex')
