@@ -4,9 +4,9 @@ Usage:
 =======================
 
 <code>
-\>\>\> cipher = VMPC()
-\>\>\> cipher.KSA('0123456789abcdef')
-\>\>\> result = cipher.crypt('\0'*1024)
+\>\>\> cipher = VMPC()<br>
+\>\>\> cipher.KSA('0123456789abcdef')<br>
+\>\>\> result = cipher.crypt('\0'*1024)<br>
 </code>
 
 Caution:
