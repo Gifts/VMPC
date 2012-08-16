@@ -220,3 +220,56 @@ class TestCrypt(unittest.TestCase):
             result1,
             result_string
         )
+
+class TestCryptDecrypt(unittest.TestCase):
+    def setUp(self):
+        self.vmpc_object_1 = vmpc.VMPC()
+        self.vmpc_object_2 = vmpc.VMPC()
+
+    def test_crypt_decrypt1(self):
+        key = 'a'*16
+        text = '0123456789' * 100
+
+        self.vmpc_object_1.KSA(key)
+        self.vmpc_object_2.KSA(key)
+
+        crypt = self.vmpc_object_1.crypt(text)
+        decrypt = self.vmpc_object_2.decrypt(crypt)
+
+        self.assertEqual(
+            text
+            , decrypt
+        )
+
+    def test_crypt_decrypt2(self):
+        key = 'a'*16
+        IV = 'b' * 16
+        text = '0123456789' * 100
+
+        self.vmpc_object_1.KSA(key, IV)
+        self.vmpc_object_2.KSA(key, IV)
+
+        crypt = self.vmpc_object_1.crypt(text)
+        decrypt = self.vmpc_object_2.decrypt(crypt)
+
+        self.assertEqual(
+            text
+            , decrypt
+        )
+
+    def test_crypt_decrypt3(self):
+        key = 'a'*16
+        IV = 'b' * 16
+        text = '0123456789' * 100
+
+        self.vmpc_object_1.KSA(key, IV, 2)
+        self.vmpc_object_2.KSA(key, IV, 2)
+
+        crypt = self.vmpc_object_1.crypt(text)
+        decrypt = self.vmpc_object_2.decrypt(crypt)
+
+        self.assertEqual(
+            text
+            , decrypt
+        )
+
