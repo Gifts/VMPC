@@ -50,19 +50,42 @@ class VMPC(object):
             or type(data) is array.array
             )
         if self._stream_generator is None:
-            self._stream_generator = self._cipher_stream()
+            #self._stream_generator = self._cipher_stream()
+            self._stream_generator2 = self._cipher_stream_chunk()
+            self._stream_generator2.send(None)
         tmp_data = array.array('B', data)
-        tmp_result = array.array('B', itertools.imap(lambda x, y: x ^ y, tmp_data, self._stream_generator))
-        return tmp_result.tostring()
+        tmp_crypt = self._stream_generator2.send(len(tmp_data))
+        for pos, value in enumerate(tmp_data):
+            tmp_data[pos] ^= tmp_crypt[pos]
+        #tmp_result = array.array('B', itertools.imap(lambda x, y: x ^ y, tmp_data, ))
+        return tmp_data.tostring()
     decrypt = crypt
 
-    def _cipher_stream(self):
+    def _cipher_stream_chunk(self, chunk=1024):
         n = 0
         tmp_P = self._P
+        chunk = yield 'OK'
         while 1:
-            self._S = tmp_P[(self._S + tmp_P[n]) & 255]
-            yield tmp_P[
-                  (tmp_P[tmp_P[self._S]] + 1) & 255
-            ]
-            tmp_P[n], tmp_P[self._S] = tmp_P[self._S], tmp_P[n]
-            n = (n + 1) & 255
+            tmp_result = []#array.array('B')
+            S = self._S
+            for i in xrange(chunk):
+                S = tmp_P[(S + tmp_P[n]) & 255]
+                tmp_result.append(tmp_P[
+                      (tmp_P[tmp_P[S]] + 1) & 255
+                ])
+                tmp_P[n], tmp_P[S] = tmp_P[S], tmp_P[n]
+                n = (n + 1) & 255
+            self._S = S
+            chunk = yield array.array('B', tmp_result)
+
+    def _cipher_stream(self):
+        tmp_gen = self._cipher_stream_chunk()
+        tmp_gen.next()
+        while 1:
+            for byte in tmp_gen.send(1024):
+                yield byte
+
+if __name__ == '__main__':
+    test = VMPC()
+    test.KSA('a' * 16)
+    test.crypt('\0' * 1024 * 1024)
