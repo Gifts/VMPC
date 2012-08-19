@@ -5,9 +5,12 @@ import array
 import itertools
 
 class VMPC(object):
+    __slots__ = ['_P', '_N', '_S', '_stream_generator']
+
     def __init__(self, level=3):
         self._P = array.array('B', range(256))
         self._S = 0
+        self._N = 0
         self._stream_generator = None
 
     def KSA(self, cipher_key, cipher_IV=None, KSA_version=1):
@@ -43,47 +46,28 @@ class VMPC(object):
 
         self._S = tmp_S
         self._P = tmp_P
+        self._N = 0
 
     def crypt(self, data):
         assert(
             type(data) is str
             or type(data) is array.array
             )
-        if self._stream_generator is None:
-            #self._stream_generator = self._cipher_stream()
-            self._stream_generator2 = self._cipher_stream_chunk()
-            self._stream_generator2.send(None)
+        s = self._S
+        n = self._N
         tmp_data = array.array('B', data)
-        tmp_crypt = self._stream_generator2.send(len(tmp_data))
-        for pos, value in enumerate(tmp_data):
-            tmp_data[pos] ^= tmp_crypt[pos]
-        #tmp_result = array.array('B', itertools.imap(lambda x, y: x ^ y, tmp_data, ))
+        for i in xrange(len(data)):
+            s = self._P[(s + self._P[n]) & 255]
+            tmp_data[i] ^= self._P[(self._P[self._P[s]] + 1) & 255]
+            self._P[s], self._P[n] = self._P[n], self._P[s]
+            n = (n + 1) & 255
+        self._S, self._N = s, n
         return tmp_data.tostring()
     decrypt = crypt
 
-    def _cipher_stream_chunk(self, chunk=1024):
-        n = 0
-        tmp_P = self._P
-        chunk = yield 'OK'
-        while 1:
-            tmp_result = []#array.array('B')
-            S = self._S
-            for i in xrange(chunk):
-                S = tmp_P[(S + tmp_P[n]) & 255]
-                tmp_result.append(tmp_P[
-                      (tmp_P[tmp_P[S]] + 1) & 255
-                ])
-                tmp_P[n], tmp_P[S] = tmp_P[S], tmp_P[n]
-                n = (n + 1) & 255
-            self._S = S
-            chunk = yield array.array('B', tmp_result)
-
     def _cipher_stream(self):
-        tmp_gen = self._cipher_stream_chunk()
-        tmp_gen.next()
         while 1:
-            for byte in tmp_gen.send(1024):
-                yield byte
+            yield ord(self.crypt('\0'))
 
 if __name__ == '__main__':
     test = VMPC()
