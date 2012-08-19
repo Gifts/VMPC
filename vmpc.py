@@ -5,10 +5,12 @@ import array
 import itertools
 
 class VMPC(object):
+    __slots__ = ['_P', '_N', '_S']
+
     def __init__(self, level=3):
         self._P = array.array('B', range(256))
         self._S = 0
-        self._stream_generator = None
+        self._N = 0
 
     def KSA(self, cipher_key, cipher_IV=None, KSA_version=1):
         assert(type(cipher_key) is str)
@@ -43,26 +45,30 @@ class VMPC(object):
 
         self._S = tmp_S
         self._P = tmp_P
+        self._N = 0
 
     def crypt(self, data):
         assert(
             type(data) is str
             or type(data) is array.array
             )
-        if self._stream_generator is None:
-            self._stream_generator = self._cipher_stream()
+        s, n = self._S, self._N
+        tmp_P = self._P
         tmp_data = array.array('B', data)
-        tmp_result = array.array('B', itertools.imap(lambda x, y: x ^ y, tmp_data, self._stream_generator))
-        return tmp_result.tostring()
+        for i in xrange(len(data)):
+            s = tmp_P[(s + tmp_P[n]) & 255]
+            tmp_data[i] ^= tmp_P[(tmp_P[tmp_P[s]] + 1) & 255]
+            tmp_P[s], tmp_P[n] = tmp_P[n], tmp_P[s]
+            n = (n + 1) & 255
+        self._S, self._N = s, n
+        return tmp_data.tostring()
     decrypt = crypt
 
     def _cipher_stream(self):
-        n = 0
-        tmp_P = self._P
         while 1:
-            self._S = tmp_P[(self._S + tmp_P[n]) & 255]
-            yield tmp_P[
-                  (tmp_P[tmp_P[self._S]] + 1) & 255
-            ]
-            tmp_P[n], tmp_P[self._S] = tmp_P[self._S], tmp_P[n]
-            n = (n + 1) & 255
+            yield ord(self.crypt('\0'))
+
+if __name__ == '__main__':
+    test = VMPC()
+    test.KSA('a' * 16)
+    test.crypt('\0' * 1024 * 1024)
