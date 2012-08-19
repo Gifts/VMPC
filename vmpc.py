@@ -5,13 +5,12 @@ import array
 import itertools
 
 class VMPC(object):
-    __slots__ = ['_P', '_N', '_S', '_stream_generator']
+    __slots__ = ['_P', '_N', '_S']
 
     def __init__(self, level=3):
         self._P = array.array('B', range(256))
         self._S = 0
         self._N = 0
-        self._stream_generator = None
 
     def KSA(self, cipher_key, cipher_IV=None, KSA_version=1):
         assert(type(cipher_key) is str)
