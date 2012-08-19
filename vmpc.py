@@ -53,13 +53,13 @@ class VMPC(object):
             type(data) is str
             or type(data) is array.array
             )
-        s = self._S
-        n = self._N
+        s, n = self._S, self._N
+        tmp_P = self._P
         tmp_data = array.array('B', data)
         for i in xrange(len(data)):
-            s = self._P[(s + self._P[n]) & 255]
-            tmp_data[i] ^= self._P[(self._P[self._P[s]] + 1) & 255]
-            self._P[s], self._P[n] = self._P[n], self._P[s]
+            s = tmp_P[(s + tmp_P[n]) & 255]
+            tmp_data[i] ^= tmp_P[(tmp_P[tmp_P[s]] + 1) & 255]
+            tmp_P[s], tmp_P[n] = tmp_P[n], tmp_P[s]
             n = (n + 1) & 255
         self._S, self._N = s, n
         return tmp_data.tostring()
