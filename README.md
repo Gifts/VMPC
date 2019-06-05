@@ -3,11 +3,11 @@ Unofficial implementation of VMPC (Variably Modified Permutation Composition) st
 Usage:
 =======================
 
-<code>
-\>\>\> cipher = VMPC()<br>
-\>\>\> cipher.KSA('0123456789abcdef')<br>
-\>\>\> result = cipher.crypt('\0'*1024)<br>
-</code>
+```
+>>> cipher = VMPC()<br>
+>>> cipher.KSA(b'0123456789abcdef')
+>>> result = cipher.crypt(b'\0'*1024)
+```
 
 Caution:
 =======================

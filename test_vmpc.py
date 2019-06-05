@@ -2,113 +2,119 @@
 import array
 import unittest
 import vmpc
+from binascii import unhexlify
+
+try:
+    xrange = xrange
+except NameError:
+    xrange = range
 
 class TestStream(unittest.TestCase):
     def setUp(self):
         self.vmpc_object = vmpc.VMPC()
 
     def test_stream1(self):
-        key = '9661410AB797D8A9EB767C21172DF6C7'.decode('hex')
-        IV = '4B5C2F003E67F39557A8D26F3DA2B155'.decode('hex')
+        key = unhexlify('9661410AB797D8A9EB767C21172DF6C7')
+        IV = unhexlify('4B5C2F003E67F39557A8D26F3DA2B155')
         self.vmpc_object.KSA(key, IV)
 
         result = array.array('B')
         stream = self.vmpc_object._cipher_stream()
         for i in xrange(102400):
-            result.append(stream.next())
+            result.append(next(stream))
         result_string = result.tostring()
 
         self.assertEqual(
             result_string[0:4],
-            'a82479f5'.decode('hex')
+            unhexlify('a82479f5')
         )
         self.assertEqual(
             result_string[252:256],
-            'b8fc66a4'.decode('hex')
+            unhexlify('b8fc66a4')
         )
         self.assertEqual(
             result_string[1020:1024],
-            'e05640a5'.decode('hex')
+            unhexlify('e05640a5')
         )
         self.assertEqual(
             result_string[102396:102400],
-            '81ca499a'.decode('hex')
+            unhexlify('81ca499a')
         )
 
     def test_stream2(self):
-        key = '9661410AB797D8A9EB767C21172DF6C7'.decode('hex')
-        IV = '4B5C2F003E67F39557A8D26F3DA2B155'.decode('hex')
+        key = unhexlify('9661410AB797D8A9EB767C21172DF6C7')
+        IV = unhexlify('4B5C2F003E67F39557A8D26F3DA2B155')
         self.vmpc_object.KSA(key, IV, 2)
 
         result = array.array('B')
         stream = self.vmpc_object._cipher_stream()
         for i in xrange(102400):
-            result.append(stream.next())
+            result.append(next(stream))
         result_string = result.tostring()
 
         self.assertEqual(
             result_string[0:4],
-            'b6ebaefe'.decode('hex')
+            unhexlify('b6ebaefe')
         )
         self.assertEqual(
             result_string[252:256],
-            '48172473'.decode('hex')
+            unhexlify('48172473')
         )
         self.assertEqual(
             result_string[1020:1024],
-            '1daec35a'.decode('hex')
+            unhexlify('1daec35a')
         )
         self.assertEqual(
             result_string[102396:102400],
-            '1da7e1dc'.decode('hex')
+            unhexlify('1da7e1dc')
         )
 
     def test_crypt1(self):
-        key = '9661410AB797D8A9EB767C21172DF6C7'.decode('hex')
-        IV = '4B5C2F003E67F39557A8D26F3DA2B155'.decode('hex')
+        key = unhexlify('9661410AB797D8A9EB767C21172DF6C7')
+        IV = unhexlify('4B5C2F003E67F39557A8D26F3DA2B155')
         self.vmpc_object.KSA(key, IV)
 
-        result_string = self.vmpc_object.crypt('\0' * 102400)
+        result_string = self.vmpc_object.crypt(b'\0' * 102400)
         self.assertEqual(
             result_string[0:4],
-            'a82479f5'.decode('hex')
+            unhexlify('a82479f5')
         )
         self.assertEqual(
             result_string[252:256],
-            'b8fc66a4'.decode('hex')
+            unhexlify('b8fc66a4')
         )
         self.assertEqual(
             result_string[1020:1024],
-            'e05640a5'.decode('hex')
+            unhexlify('e05640a5')
         )
         self.assertEqual(
             result_string[102396:102400],
-            '81ca499a'.decode('hex')
+            unhexlify('81ca499a')
         )
 
     def test_crypt2(self):
-        key = '9661410AB797D8A9EB767C21172DF6C7'.decode('hex')
-        IV = '4B5C2F003E67F39557A8D26F3DA2B155'.decode('hex')
+        key = unhexlify('9661410AB797D8A9EB767C21172DF6C7')
+        IV = unhexlify('4B5C2F003E67F39557A8D26F3DA2B155')
         self.vmpc_object.KSA(key, IV)
 
-        result_string = self.vmpc_object.crypt('\0' * 51200)
-        result_string += self.vmpc_object.crypt('\0' * 51200)
+        result_string = self.vmpc_object.crypt(b'\0' * 51200)
+        result_string += self.vmpc_object.crypt(b'\0' * 51200)
 
         self.assertEqual(
             result_string[0:4],
-            'a82479f5'.decode('hex')
+            unhexlify('a82479f5')
         )
         self.assertEqual(
             result_string[252:256],
-            'b8fc66a4'.decode('hex')
+            unhexlify('b8fc66a4')
         )
         self.assertEqual(
             result_string[1020:1024],
-            'e05640a5'.decode('hex')
+            unhexlify('e05640a5')
         )
         self.assertEqual(
             result_string[102396:102400],
-            '81ca499a'.decode('hex')
+            unhexlify('81ca499a')
         )
 
 
@@ -116,36 +122,36 @@ class TestAsserts(unittest.TestCase):
     def setUp(self):
         self.vmpc_object = vmpc.VMPC()
 
-    def fail_KSA1(self):
+    def test_fail_KSA1(self):
         with self.assertRaises(AssertionError):
             self.vmpc_object.KSA(123456789)
 
-    def fail_KSA2(self):
+    def test_fail_KSA2(self):
         with self.assertRaises(AssertionError):
-            self.vmpc_object.KSA('123456')
+            self.vmpc_object.KSA(b'123456')
 
-    def fail_KSA3(self):
+    def test_fail_KSA3(self):
         with self.assertRaises(AssertionError):
-            self.vmpc_object.KSA('a' * 150)
+            self.vmpc_object.KSA(b'a' * 150)
 
-    def fail_KSA4(self):
+    def test_fail_KSA4(self):
         with self.assertRaises(AssertionError):
-            self.vmpc_object.KSA('a' * 16, '1234')
+            self.vmpc_object.KSA(b'a' * 16, '1234')
 
-    def fail_KSA5(self):
+    def test_fail_KSA5(self):
         with self.assertRaises(AssertionError):
-            self.vmpc_object.KSA('a' * 16, 'a' * 150)
+            self.vmpc_object.KSA(b'a' * 16, b'a' * 150)
 
-    def fail_KSA6(self):
+    def test_fail_KSA6(self):
         with self.assertRaises(AssertionError):
-            self.vmpc_object.KSA('a' * 16, None, 2)
+            self.vmpc_object.KSA(b'a' * 16, None, 2)
 
-    def fail_KSA7(self):
+    def test_fail_KSA7(self):
         with self.assertRaises(AssertionError):
-            self.vmpc_object.KSA('a' * 16, 'a' * 150)
+            self.vmpc_object.KSA(b'a' * 16, b'a' * 150)
 
-    def fail_crypt1(self):
-        self.vmpc_object.KSA('a' * 16, 'a' * 16)
+    def test_fail_crypt1(self):
+        self.vmpc_object.KSA(b'a' * 16, b'a' * 16)
         with self.assertRaises(AssertionError):
             self.vmpc_object.crypt(1)
 
@@ -156,19 +162,19 @@ class TestCrypt(unittest.TestCase):
         self.vmpc_object_2 = vmpc.VMPC()
 
     def testEqualStreams1(self):
-        key = 'a' * 16
+        key = b'a' * 16
         stream_length = 1024
 
         self.vmpc_object_1.KSA(key)
         self.vmpc_object_2.KSA(key)
 
-        result1 = self.vmpc_object_1.crypt('\0' * stream_length)
+        result1 = self.vmpc_object_1.crypt(b'\0' * stream_length)
 
         result2 = array.array('B')
         stream = self.vmpc_object_2._cipher_stream()
 
         for i in xrange(stream_length):
-            result2.append(stream.next())
+            result2.append(next(stream))
         result_string = result2.tostring()
 
         self.assertEqual(
@@ -178,20 +184,20 @@ class TestCrypt(unittest.TestCase):
 
 
     def testEqualStreams2(self):
-        key = 'a' * 16
-        IV = 'b' * 16
+        key = b'a' * 16
+        IV = b'b' * 16
         stream_length = 1024
 
         self.vmpc_object_1.KSA(key, IV)
         self.vmpc_object_2.KSA(key, IV)
 
-        result1 = self.vmpc_object_1.crypt('\0' * stream_length)
+        result1 = self.vmpc_object_1.crypt(b'\0' * stream_length)
 
         result2 = array.array('B')
         stream = self.vmpc_object_2._cipher_stream()
 
         for i in xrange(stream_length):
-            result2.append(stream.next())
+            result2.append(next(stream))
         result_string = result2.tostring()
 
         self.assertEqual(
@@ -200,20 +206,20 @@ class TestCrypt(unittest.TestCase):
         )
 
     def testEqualStreams3(self):
-        key = 'a' * 16
-        IV = 'b' * 16
+        key = b'a' * 16
+        IV = b'b' * 16
         stream_length = 1024
 
         self.vmpc_object_1.KSA(key, IV, 2)
         self.vmpc_object_2.KSA(key, IV, 2)
 
-        result1 = self.vmpc_object_1.crypt('\0' * stream_length)
+        result1 = self.vmpc_object_1.crypt(b'\0' * stream_length)
 
         result2 = array.array('B')
         stream = self.vmpc_object_2._cipher_stream()
 
         for i in xrange(stream_length):
-            result2.append(stream.next())
+            result2.append(next(stream))
         result_string = result2.tostring()
 
         self.assertEqual(
@@ -227,8 +233,8 @@ class TestCryptDecrypt(unittest.TestCase):
         self.vmpc_object_2 = vmpc.VMPC()
 
     def test_crypt_decrypt1(self):
-        key = 'a'*16
-        text = '0123456789' * 100
+        key = b'a'*16
+        text = b'0123456789' * 100
 
         self.vmpc_object_1.KSA(key)
         self.vmpc_object_2.KSA(key)
@@ -242,9 +248,9 @@ class TestCryptDecrypt(unittest.TestCase):
         )
 
     def test_crypt_decrypt2(self):
-        key = 'a'*16
-        IV = 'b' * 16
-        text = '0123456789' * 100
+        key = b'a'*16
+        IV = b'b' * 16
+        text = b'0123456789' * 100
 
         self.vmpc_object_1.KSA(key, IV)
         self.vmpc_object_2.KSA(key, IV)
@@ -258,9 +264,9 @@ class TestCryptDecrypt(unittest.TestCase):
         )
 
     def test_crypt_decrypt3(self):
-        key = 'a'*16
-        IV = 'b' * 16
-        text = '0123456789' * 100
+        key = b'a'*16
+        IV = b'b' * 16
+        text = b'0123456789' * 100
 
         self.vmpc_object_1.KSA(key, IV, 2)
         self.vmpc_object_2.KSA(key, IV, 2)
