@@ -4,7 +4,7 @@ Usage:
 =======================
 
 ```
->>> cipher = VMPC()<br>
+>>> cipher = VMPC()
 >>> cipher.KSA(b'0123456789abcdef')
 >>> result = cipher.crypt(b'\0'*1024)
 ```
